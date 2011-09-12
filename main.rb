@@ -81,18 +81,16 @@ si.tooltip = 'GloudApp'
 # left click
 si.signal_connect('activate') do
 	file = File.join(TMP_DIR, "Screenshot #{Time.now.strftime(SCRN_TIME_FMT)}.png")
-	
 	puts "Taking screenshot..."
-	
 	# TODO: find rubish way to take screen shots
 	# make screenshot via image magick:
 	system("import -window root \"#{file}\"")
-	
 	upload_file(file)
 end
 
 # popup menu
-@upload = Gtk::MenuItem.new("")
+@upload = Gtk::MenuItem.new("Upload form clipboard")
+@upload.set_sensitive(false)
 
 info = Gtk::MenuItem.new("About")
 info.signal_connect('activate') do
@@ -117,15 +115,20 @@ si.signal_connect('popup-menu') do |tray, button, time|
 	cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
 	cb.request_text do |clipboard, text|
 		if !text.nil? and File.file?(text)
+			@upload.set_sensitive(true)
 			@upload.label = "Upload: #{text}"
-			@upload.signal_connect('activate') do
-				upload_file(text)
+			@upload.signal_handler_disconnect(@last_handler) if not @last_handler.nil?
+			@last_handler = @upload.signal_connect('activate') do
+				puts "Uploading file from clipboard..."
+				if File.file?(text)
+					upload_file(text)
+				else
+					# TODO: nice dialog
+				end
 			end
 		else
-			@upload.label = "Upload..."
-			@upload.signal_connect('activate') do
-				#
-			end
+			@upload.set_sensitive(false)
+			@upload.label = "Upload from clipboard"
 		end
 		menu.popup(nil, nil, button, time)
 	end
