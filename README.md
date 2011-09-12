@@ -22,3 +22,10 @@ On Ruby 1.8 you need json gem, too:
 	sudo gem install json
 
 (If you use [rvm](http://beginrescueend.com/) you should omit the 'sudo'.)
+
+Links
+-----
+
+- [no screenshots from Ruby :(](http://tips.webdesign10.com/how-to-take-a-screenshot-on-ubuntu-linux)
+- [Ruby-GNOME2](http://ruby-gnome2.sourceforge.jp/hiki.cgi)
+- [Gtk::StatusIcon](http://ruby-gnome2.sourceforge.jp/hiki.cgi?Gtk%3A%3AStatusIcon)
