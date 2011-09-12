@@ -79,20 +79,26 @@ end
 
 upload_g = Gtk::MenuItem.new("Upload...")
 upload_g.signal_connect('activate') do
-	dialog = Gtk::FileChooserDialog.new(
+	file_dlg = Gtk::FileChooserDialog.new(
 		"Upload File", nil, Gtk::FileChooser::ACTION_OPEN, nil,
 		[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_CANCEL],
 		["Upload", Gtk::Dialog::RESPONSE_ACCEPT])
-	if dialog.run == Gtk::Dialog::RESPONSE_ACCEPT
-		file = GLib.filename_to_utf8(dialog.filename)
-		dialog.destroy
+	if file_dlg.run == Gtk::Dialog::RESPONSE_ACCEPT
+		file = GLib.filename_to_utf8(file_dlg.filename)
+		file_dlg.destroy
 		if File.file?(file)
 			upload_file(file)
 		else
-			# TODO: nice dialog
+			err_dlg = Gtk::MessageDialog.new(
+				nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
+				 Gtk::MessageDialog::BUTTONS_CLOSE,
+				 "Error uploading file '%s'." % file)
+			err_dlg.title = "Error"
+			err_dlg.run
+			err_dlg.destroy
 		end
 	else
-		dialog.destroy
+		file_dlg.destroy
 	end
 end
 
@@ -137,7 +143,13 @@ si.signal_connect('popup-menu') do |tray, button, time|
 				if File.file?(text)
 					upload_file(text)
 				else
-					# TODO: nice dialog
+					err_dlg = Gtk::MessageDialog.new(
+						nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
+						 Gtk::MessageDialog::BUTTONS_CLOSE,
+						 "Error uploading file '%s'." % file)
+					err_dlg.title = "Error"
+					err_dlg.run
+					err_dlg.destroy
 				end
 			end
 		else
