@@ -97,16 +97,18 @@ upload_g.signal_connect('activate') do
 	dialog = Gtk::FileChooserDialog.new(
 		"Upload File", nil, Gtk::FileChooser::ACTION_OPEN, nil,
 		[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_CANCEL],
-		[Gtk::Stock::OPEN, Gtk::Dialog::RESPONSE_ACCEPT])
+		["Upload", Gtk::Dialog::RESPONSE_ACCEPT])
 	if dialog.run == Gtk::Dialog::RESPONSE_ACCEPT
-		file = dialog.filename
+		file = GLib.filename_to_utf8(dialog.filename)
+		dialog.destroy
 		if File.file?(file)
 			upload_file(file)
 		else
 			# TODO: nice dialog
 		end
+	else
+		dialog.destroy
 	end
-	dialog.destroy
 end
 
 info = Gtk::MenuItem.new("About")
