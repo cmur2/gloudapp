@@ -92,6 +92,23 @@ end
 @upload = Gtk::MenuItem.new("Upload form clipboard")
 @upload.set_sensitive(false)
 
+upload_g = Gtk::MenuItem.new("Upload...")
+upload_g.signal_connect('activate') do
+	dialog = Gtk::FileChooserDialog.new(
+		"Upload File", nil, Gtk::FileChooser::ACTION_OPEN, nil,
+		[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_CANCEL],
+		[Gtk::Stock::OPEN, Gtk::Dialog::RESPONSE_ACCEPT])
+	if dialog.run == Gtk::Dialog::RESPONSE_ACCEPT
+		file = dialog.filename
+		if File.file?(file)
+			upload_file(file)
+		else
+			# TODO: nice dialog
+		end
+	end
+	dialog.destroy
+end
+
 info = Gtk::MenuItem.new("About")
 info.signal_connect('activate') do
 	# TODO: show information dialog
@@ -104,6 +121,7 @@ end
 
 menu = Gtk::Menu.new
 menu.append(@upload)
+menu.append(upload_g)
 menu.append(info)
 menu.append(Gtk::SeparatorMenuItem.new)
 menu.append(quit)
