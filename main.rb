@@ -41,45 +41,14 @@ end
 
 def upload_file(file)
 	puts "Uploading #{file}"
-	
 	drop = @client.upload(file)
-	
 	puts "URL (in clipboard, too): #{drop.url}"
-	
 	# copy URL to clipboard
 	cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
 	cb.text = drop.url
 end
 
-# main
-
-@client = CloudApp::Client.new
-
-if ARGV.length == 2
-	# assume that's username and password in ARGV
-	@client.authenticate(ARGV[0], ARGV[1])
-else
-	# TODO: launch an Gtk Dialog asking for login
-	puts "You should provide username and password as arguments!"
-	exit 1
-end
-
-# check whether auth was successful
-begin
-	@acc = CloudApp::Account.find
-	$domain = @acc.domain.nil? ? 'cl.ly' : @acc.domain
-rescue
-	abort "Auhtentication failed: #{$!.to_s}"
-end
-
-# create status icon
-si = Gtk::StatusIcon.new
-si.stock = Gtk::Stock::DIALOG_INFO
-#si.pixbuf = Gdk::Pixbuf.new('/path/to/image')
-si.tooltip = 'GloudApp'
-
-# left click
-si.signal_connect('activate') do
+def take_screenshot
 	file = File.join(TMP_DIR, "Screenshot #{Time.now.strftime(SCRN_TIME_FMT)}.png")
 	puts "Taking screenshot..."
 	# TODO: find rubish way to take screen shots
@@ -88,7 +57,23 @@ si.signal_connect('activate') do
 	upload_file(file)
 end
 
+# create status icon
+si = Gtk::StatusIcon.new
+si.stock = Gtk::Stock::DIALOG_INFO
+# TODO: si.pixbuf = Gdk::Pixbuf.new('/path/to/image')
+si.tooltip = 'GloudApp'
+
+# left click
+si.signal_connect('activate') do
+	take_screenshot
+end
+
 # popup menu
+screen = Gtk::MenuItem.new("Take screenshot")
+screen.signal_connect('activate') do
+	take_screenshot
+end
+
 @upload = Gtk::MenuItem.new("Upload form clipboard")
 @upload.set_sensitive(false)
 
@@ -113,7 +98,15 @@ end
 
 info = Gtk::MenuItem.new("About")
 info.signal_connect('activate') do
-	# TODO: show information dialog
+	about_dlg = Gtk::AboutDialog.new
+	about_dlg.name = "GloudApp"
+	about_dlg.version = "0.1"
+	about_dlg.copyright = "Copyright 2011 Christian Nicolai"
+	about_dlg.license = ""
+	about_dlg.website = "https://github.com/cmur2/gloudapp"
+	about_dlg.program_name = "GloudApp"
+	about_dlg.run
+	about_dlg.destroy
 end
 
 quit = Gtk::MenuItem.new("Quit")
@@ -122,6 +115,7 @@ quit.signal_connect('activate') do
 end
 
 menu = Gtk::Menu.new
+menu.append(screen)
 menu.append(@upload)
 menu.append(upload_g)
 menu.append(info)
@@ -156,6 +150,28 @@ si.signal_connect('popup-menu') do |tray, button, time|
 end
 
 #si.signal_connect('query-tooltip') do |tray, x, y, mode, tt| tt = "#{Time.now}" end
+
+# main
+#p Gtk::MAJOR_VERSION, Gtk::MINOR_VERSION, Gtk::MICRO_VERSION
+
+@client = CloudApp::Client.new
+
+if ARGV.length == 2
+	# assume that's username and password in ARGV
+	@client.authenticate(ARGV[0], ARGV[1])
+else
+	# TODO: launch an Gtk Dialog asking for login
+	puts "You should provide username and password as arguments!"
+	exit 1
+end
+
+# check whether auth was successful
+begin
+	@acc = CloudApp::Account.find
+	$domain = @acc.domain.nil? ? 'cl.ly' : @acc.domain
+rescue
+	abort "Authentication failed: #{$!.to_s}"
+end
 
 # main loop
 Gtk.main
