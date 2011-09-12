@@ -39,6 +39,19 @@ module CloudApp
 	end
 end
 
+def upload_file(file)
+	puts "Uploading #{file}"
+	
+	drop = @client.upload(file)
+	
+	puts "URL (in clipboard, too): #{drop.url}"
+	
+	# copy URL to clipboard
+	cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
+	cb.text = drop.url
+end
+
+# main
 
 @client = CloudApp::Client.new
 
@@ -75,37 +88,51 @@ si.signal_connect('activate') do
 	# make screenshot via image magick:
 	system("import -window root \"#{file}\"")
 	
-	puts "Uploading it..."
-	
-	drop = @client.upload(file)
-	
-	puts "URL (in clipboard, too): #{drop.url}"
-	
-	# copy URL to clipboard
-	cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
-	cb.text = drop.url
+	upload_file(file)
 end
 
 # popup menu
-info = Gtk::ImageMenuItem.new(Gtk::Stock::INFO)
+@upload = Gtk::MenuItem.new("")
+
+info = Gtk::MenuItem.new("About")
 info.signal_connect('activate') do
-	#p "Embedded: #{si.embedded?}"; p "Visible: #{si.visible?}"; p "Blinking: #{si.blinking?}"
 	# TODO: show information dialog
 end
 
-quit = Gtk::ImageMenuItem.new(Gtk::Stock::QUIT)
+quit = Gtk::MenuItem.new("Quit")
 quit.signal_connect('activate') do
 	Gtk.main_quit
 end
 
 menu = Gtk::Menu.new
+menu.append(@upload)
 menu.append(info)
 menu.append(Gtk::SeparatorMenuItem.new)
 menu.append(quit)
 menu.show_all
 
 # show on right click
-si.signal_connect('popup-menu') do |tray, button, time| menu.popup(nil, nil, button, time) end
+si.signal_connect('popup-menu') do |tray, button, time|
+
+	cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
+	cb.request_text do |clipboard, text|
+		if !text.nil? and File.file?(text)
+			@upload.label = "Upload: #{text}"
+			@upload.signal_connect('activate') do
+				upload_file(text)
+			end
+		else
+			@upload.label = "Upload..."
+			@upload.signal_connect('activate') do
+				#
+			end
+		end
+		menu.popup(nil, nil, button, time)
+	end
+	
+end
+
+#si.signal_connect('query-tooltip') do |tray, x, y, mode, tt| tt = "#{Time.now}" end
 
 # main loop
 Gtk.main
