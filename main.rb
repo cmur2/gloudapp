@@ -59,8 +59,7 @@ end
 
 # create status icon
 si = Gtk::StatusIcon.new
-si.stock = Gtk::Stock::DIALOG_INFO
-# TODO: si.pixbuf = Gdk::Pixbuf.new('/path/to/image')
+si.pixbuf = Gdk::Pixbuf.new('gloudapp.png')
 si.tooltip = 'GloudApp'
 
 # left click
@@ -106,11 +105,14 @@ info = Gtk::MenuItem.new("About")
 info.signal_connect('activate') do
 	about_dlg = Gtk::AboutDialog.new
 	about_dlg.name = "GloudApp"
+	about_dlg.program_name = "GloudApp"
 	about_dlg.version = "0.1"
 	about_dlg.copyright = "Copyright 2011 Christian Nicolai"
-	about_dlg.license = ""
+	about_dlg.license = "" # TODO: license
+	about_dlg.artists = ["Jan Graichen"]
+	about_dlg.authors = ["Christian Nicolai"]
 	about_dlg.website = "https://github.com/cmur2/gloudapp"
-	about_dlg.program_name = "GloudApp"
+	about_dlg.logo = Gdk::Pixbuf.new('gloudapp.png')
 	about_dlg.run
 	about_dlg.destroy
 end
