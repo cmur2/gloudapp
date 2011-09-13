@@ -146,7 +146,7 @@ si.signal_connect('popup-menu') do |tray, button, time|
 					err_dlg = Gtk::MessageDialog.new(
 						nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
 						 Gtk::MessageDialog::BUTTONS_CLOSE,
-						 "Error uploading file '%s'." % file)
+						 "Error uploading file #{file}.")
 					err_dlg.title = "Error"
 					err_dlg.run
 					err_dlg.destroy
@@ -172,9 +172,47 @@ if ARGV.length == 2
 	# assume that's username and password in ARGV
 	@client.authenticate(ARGV[0], ARGV[1])
 else
-	# TODO: launch an Gtk Dialog asking for login
-	puts "You should provide username and password as arguments!"
-	exit 1
+	login_dlg = Gtk::Dialog.new(
+		"Authentication", nil, Gtk::Dialog::MODAL,
+		["Login", Gtk::Dialog::RESPONSE_ACCEPT],
+		[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])
+	login_dlg.has_separator = false
+	
+	login = Gtk::Entry.new
+	password = Gtk::Entry.new
+	table = Gtk::Table.new(2, 3)
+	table.border_width = 5
+	image = Gtk::Image.new(Gtk::Stock::DIALOG_AUTHENTICATION, Gtk::IconSize::DIALOG)
+	table.attach(image, 0, 1, 0, 2, nil, nil, 10, 10)
+	table.attach_defaults(Gtk::Label.new("Login:"), 1, 2, 0, 1)
+	table.attach_defaults(login, 2, 3, 0, 1)
+	table.attach_defaults(Gtk::Label.new("Password:"), 1, 2, 1, 2)
+	password.visibility = false
+	table.attach_defaults(password, 2, 3, 1, 2)
+	login_dlg.vbox.add(table)
+	
+#	call_login = Proc.new do |obj, ev|
+#		if #(ev.is_a? Gdk::EventKey and (ev.keyval == Gdk::Keyval::GDK_KP_Enter or ev.keyval == Gdk::Keyval::GDK_Return)) or
+#			(ev.is_a? Fixnum and ev == Gtk::Dialog::RESPONSE_ACCEPT)
+#			@client.authenticate(login.text, password.text)
+#		end
+#	end
+	
+	login_dlg.signal_connect("key_release_event") do |obj, ev|
+		obj.response(Gtk::Dialog::RESPONSE_ACCEPT) if (ev.is_a? Gdk::EventKey and (ev.keyval == Gdk::Keyval::GDK_KP_Enter or ev.keyval == Gdk::Keyval::GDK_Return))
+	end
+	#login_dlg.signal_connect('response', &call_login)
+	
+	login_dlg.show_all
+	
+	res = login_dlg.run
+	if res == Gtk::Dialog::RESPONSE_ACCEPT
+		@client.authenticate(login.text, password.text)
+		login_dlg.destroy
+	elsif res == Gtk::Dialog::RESPONSE_REJECT
+		login_dlg.destroy
+		exit 1
+	end
 end
 
 # check whether auth was successful
@@ -182,7 +220,14 @@ begin
 	@acc = CloudApp::Account.find
 	$domain = @acc.domain.nil? ? 'cl.ly' : @acc.domain
 rescue
-	abort "Authentication failed: #{$!.to_s}"
+	err_dlg = Gtk::MessageDialog.new(
+		nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
+		Gtk::MessageDialog::BUTTONS_CLOSE,
+		"Authentication failed: #{$!.to_s}")
+	err_dlg.title = "Error"
+	err_dlg.run
+	err_dlg.destroy
+	exit 1
 end
 
 # main loop
