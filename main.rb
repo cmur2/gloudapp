@@ -184,9 +184,9 @@ else
 	table.border_width = 5
 	image = Gtk::Image.new(Gtk::Stock::DIALOG_AUTHENTICATION, Gtk::IconSize::DIALOG)
 	table.attach(image, 0, 1, 0, 2, nil, nil, 10, 10)
-	table.attach_defaults(Gtk::Label.new("Login:"), 1, 2, 0, 1)
+	table.attach_defaults(Gtk::Label.new("Username:").set_xalign(1).set_xpad(5), 1, 2, 0, 1)
 	table.attach_defaults(login, 2, 3, 0, 1)
-	table.attach_defaults(Gtk::Label.new("Password:"), 1, 2, 1, 2)
+	table.attach_defaults(Gtk::Label.new("Password:").set_xalign(1).set_xpad(5), 1, 2, 1, 2)
 	password.visibility = false
 	table.attach_defaults(password, 2, 3, 1, 2)
 	login_dlg.vbox.add(table)
