@@ -57,6 +57,15 @@ def take_screenshot
 	upload_file(file)
 end
 
+def show_error_dialog(title, msg)
+	err_dlg = Gtk::MessageDialog.new(
+		nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
+		Gtk::MessageDialog::BUTTONS_CLOSE, msg)
+	err_dlg.title = title
+	err_dlg.run
+	err_dlg.destroy
+end
+
 # create status icon
 si = Gtk::StatusIcon.new
 si.pixbuf = Gdk::Pixbuf.new('gloudapp.png')
@@ -88,13 +97,7 @@ upload_g.signal_connect('activate') do
 		if File.file?(file)
 			upload_file(file)
 		else
-			err_dlg = Gtk::MessageDialog.new(
-				nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
-				 Gtk::MessageDialog::BUTTONS_CLOSE,
-				 "Error uploading file '%s'." % file)
-			err_dlg.title = "Error"
-			err_dlg.run
-			err_dlg.destroy
+			show_error_dialog("Error", "Error uploading file #{file}.")
 		end
 	else
 		file_dlg.destroy
@@ -145,13 +148,7 @@ si.signal_connect('popup-menu') do |tray, button, time|
 				if File.file?(text)
 					upload_file(text)
 				else
-					err_dlg = Gtk::MessageDialog.new(
-						nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
-						 Gtk::MessageDialog::BUTTONS_CLOSE,
-						 "Error uploading file #{file}.")
-					err_dlg.title = "Error"
-					err_dlg.run
-					err_dlg.destroy
+					show_error_dialog("Error", "Error uploading file #{file}.")
 				end
 			end
 		else
@@ -222,13 +219,7 @@ begin
 	@acc = CloudApp::Account.find
 	$domain = @acc.domain.nil? ? 'cl.ly' : @acc.domain
 rescue
-	err_dlg = Gtk::MessageDialog.new(
-		nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
-		Gtk::MessageDialog::BUTTONS_CLOSE,
-		"Authentication failed: #{$!.to_s}")
-	err_dlg.title = "Error"
-	err_dlg.run
-	err_dlg.destroy
+	show_error_dialog("Error", "Authentication failed: #{$!.to_s}")
 	exit 1
 end
 
