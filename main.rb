@@ -66,12 +66,10 @@ def show_error_dialog(title, msg)
 	err_dlg.destroy
 end
 
-# create status icon
+# status icon
 si = Gtk::StatusIcon.new
 si.pixbuf = Gdk::Pixbuf.new('gloudapp.png')
 si.tooltip = 'GloudApp'
-
-# left click
 si.signal_connect('activate') do
 	take_screenshot
 end
@@ -160,8 +158,6 @@ si.signal_connect('popup-menu') do |tray, button, time|
 	
 end
 
-#si.signal_connect('query-tooltip') do |tray, x, y, mode, tt| tt = "#{Time.now}" end
-
 # main
 #p Gtk::MAJOR_VERSION, Gtk::MINOR_VERSION, Gtk::MICRO_VERSION
 
@@ -178,37 +174,30 @@ else
 	login_dlg.has_separator = false
 	
 	login = Gtk::Entry.new
-	password = Gtk::Entry.new
-	table = Gtk::Table.new(2, 3)
-	table.border_width = 5
+	password = Gtk::Entry.new.set_visibility(false)
 	image = Gtk::Image.new(Gtk::Stock::DIALOG_AUTHENTICATION, Gtk::IconSize::DIALOG)
+	
+	table = Gtk::Table.new(2, 3).set_border_width(5)
 	table.attach(image, 0, 1, 0, 2, nil, nil, 10, 10)
 	table.attach_defaults(Gtk::Label.new("Username:").set_xalign(1).set_xpad(5), 1, 2, 0, 1)
 	table.attach_defaults(login, 2, 3, 0, 1)
 	table.attach_defaults(Gtk::Label.new("Password:").set_xalign(1).set_xpad(5), 1, 2, 1, 2)
-	password.visibility = false
 	table.attach_defaults(password, 2, 3, 1, 2)
+	
 	login_dlg.vbox.add(table)
-	
-#	call_login = Proc.new do |obj, ev|
-#		if #(ev.is_a? Gdk::EventKey and (ev.keyval == Gdk::Keyval::GDK_KP_Enter or ev.keyval == Gdk::Keyval::GDK_Return)) or
-#			(ev.is_a? Fixnum and ev == Gtk::Dialog::RESPONSE_ACCEPT)
-#			@client.authenticate(login.text, password.text)
-#		end
-#	end
-	
-	login_dlg.signal_connect("key_release_event") do |obj, ev|
-		obj.response(Gtk::Dialog::RESPONSE_ACCEPT) if (ev.is_a? Gdk::EventKey and (ev.keyval == Gdk::Keyval::GDK_KP_Enter or ev.keyval == Gdk::Keyval::GDK_Return))
-	end
-	#login_dlg.signal_connect('response', &call_login)
-	
 	login_dlg.show_all
+	# close dialog on return or enter
+	login_dlg.signal_connect("key_release_event") do |obj, ev|
+		if ev.keyval == Gdk::Keyval::GDK_Return or ev.keyval == Gdk::Keyval::GDK_KP_Enter
+			obj.response(Gtk::Dialog::RESPONSE_ACCEPT)
+		end
+	end
 	
-	res = login_dlg.run
-	if res == Gtk::Dialog::RESPONSE_ACCEPT
+	case login_dlg.run
+	when Gtk::Dialog::RESPONSE_ACCEPT
 		@client.authenticate(login.text, password.text)
 		login_dlg.destroy
-	elsif res == Gtk::Dialog::RESPONSE_REJECT
+	when Gtk::Dialog::RESPONSE_REJECT
 		login_dlg.destroy
 		exit 1
 	end
