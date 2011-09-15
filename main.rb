@@ -161,9 +161,19 @@ module GloudApp
       if file_dlg.run == Gtk::Dialog::RESPONSE_ACCEPT
         file = GLib.filename_to_utf8(file_dlg.filename)
         file_dlg.destroy
-        upload_file(file)
+        
+        # timeout to close file chooser before blocking gtk thread
+        Gtk.timeout_add 50 do
+          if upload_file(file)
+            self.icon = Icon.finish
+          end
+          false
+        end
+        false
       else
         file_dlg.destroy
+        @tray.icon = Icon.normal
+        false
       end
   	end
   	
@@ -175,6 +185,7 @@ module GloudApp
     		# copy URL to clipboard
     		cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
     		cb.text = drop.url
+    		drop.url
     	else
         error "Error uploading file #{file}. Does not exists or is not a file."
     	end
@@ -200,6 +211,7 @@ module GloudApp
       @tray.icon = Icon.error
       @tray.message = options[:message]
       ErrorDialog.run!(options[:title], options[:message])
+      false
   	end
   end
   
