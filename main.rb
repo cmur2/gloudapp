@@ -53,7 +53,7 @@ module GloudApp
 			end
 
 			if not credentials_valid?
-				show_error_dialog("Error", "Authentication failed: #{$!.to_s}")
+				ErrorDialog.run!("Error", "Authentication failed!")
 			end
 
 			create_tray
@@ -144,6 +144,8 @@ module GloudApp
 		end
 
 		def upload_from_clipboard
+			# current cliboard context might not be the same as shown
+			# on popup menu creation...
 			with_clipboard_text do |text|
 				if !text.nil?
 					puts "Uploading file from clipboard..."
@@ -350,8 +352,8 @@ module GloudApp
 		end
 
 		def self.run!(title, message)
-			instance = self.new
-			instance.run(title, message)
+			instance = self.new(title, message)
+			instance.run
 			instance.destroy
 		end
 	end
