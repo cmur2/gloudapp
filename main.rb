@@ -165,7 +165,7 @@ module GloudApp
         # timeout to close file chooser before blocking gtk thread
         Gtk.timeout_add 50 do
           if upload_file(file)
-            self.icon = Icon.finish
+            @tray.icon = Icon.finish
           end
           false
         end
