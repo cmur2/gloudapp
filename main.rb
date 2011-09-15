@@ -109,9 +109,10 @@ module GloudApp
 				:action => Proc.new { copy_last_drop_url },
 				:no_icon_change => true
 
+			@tray.add_separator
+
 			# take and upload screenshot
-			@tray.add_action("Take screenshot",
-				:after_seperator => true) { take_screenshot }
+			@tray.add_action("Take screenshot") { take_screenshot }
 
 			# upload file from path in clipboard
 			@tray.add_action "Upload from clipboard",
@@ -124,10 +125,10 @@ module GloudApp
 			# show about dialog
 			@tray.add_action("About", :no_icon_change => true) { GloudApp::AboutDialog.run! }
 
+			@tray.add_separator
+
 			# quit app
-			@tray.add_action("Quit",
-				:after_seperator => true,
-				:no_icon_change => true) { Gtk.main_quit }
+			@tray.add_action("Quit", :no_icon_change => true) { Gtk.main_quit }
 		end
 
 		def check_clipboard(item)
@@ -266,6 +267,11 @@ module GloudApp
 			@actions << options
 		end
 
+		def add_separator()
+			@actions ||= []
+			@actions << {:separator => true}
+		end
+
 		def run!
 			@si = Gtk::StatusIcon.new
 			@si.pixbuf = Gdk::Pixbuf.new(@options[:icon])
@@ -316,9 +322,12 @@ module GloudApp
 		def create_menu
 			@menu = Gtk::Menu.new
 			@actions.each do |action|
-				@menu.append Gtk::SeparatorMenuItem.new if action[:after_seperator]
+				if action[:separator]
+					@menu.append Gtk::SeparatorMenuItem.new
+					next
+				end
 
-				item = Gtk::MenuItem.new action[:title].to_s
+				item = Gtk::MenuItem.new(action[:title].to_s)
 				action[:item] = item
 				item.signal_connect('activate') do
 					run_action action[:action], !!action[:no_icon_change]
