@@ -118,10 +118,12 @@ module GloudApp
       @tray.add_action("Upload file") { upload_via_chooser }
      
       # show about dialog
-      @tray.add_action("About") { GloudApp::AboutDialog.run! }
+      @tray.add_action("About", :no_icon_change => true) { GloudApp::AboutDialog.run! }
       
       # quit app
-      @tray.add_action("Quit", :after_seperator => true) { Gtk.main_quit }
+      @tray.add_action("Quit", 
+        :after_seperator => true, 
+        :no_icon_change => true) { Gtk.main_quit }
   	end
   	
   	def check_clipboard(item)
@@ -258,15 +260,15 @@ module GloudApp
     end
     
     private
-    def run_action(proc)
+    def run_action(proc, no_icon_change = false)
       if proc.is_a?(Proc)
-        self.icon = Icon.working
+        self.icon = Icon.working unless no_icon_change
         
         # timeout action to get at least on repaint event after
         # changing icon to working image
-        Gtk.timeout_add 100 do
+        Gtk.timeout_add 50 do
           if proc.call
-            self.icon = Icon.finish
+            self.icon = Icon.finish unless no_icon_change
           end
           false
         end
@@ -281,7 +283,7 @@ module GloudApp
         item = Gtk::MenuItem.new action[:title].to_s
         action[:item] = item
         item.signal_connect('activate') do
-          run_action action[:action]
+          run_action action[:action], !!action[:no_icon_change]
         end
         @menu.append item
       end
