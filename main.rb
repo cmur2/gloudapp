@@ -329,18 +329,21 @@ module GloudApp
 		end
 	end
 
-	class ErrorDialog
-		def self.run!(title, message)
-			err_dlg = Gtk::MessageDialog.new(
-				nil, 
+	class ErrorDialog < Gtk::MessageDialog
+		def initialize(title, message)
+			super(nil,
 				Gtk::Dialog::MODAL, 
 				Gtk::MessageDialog::ERROR,
 				Gtk::MessageDialog::BUTTONS_CLOSE, 
 				message)
-			err_dlg.title = title
-			err_dlg.icon = GloudApp::Icon.normal
-			err_dlg.run
-			err_dlg.destroy
+			self.icon = GloudApp::Icon.normal
+			self.title = title
+		end
+
+		def self.run!(title, message)
+			instance = self.new
+			instance.run(title, message)
+			instance.destroy
 		end
 	end
 	
@@ -368,10 +371,13 @@ module GloudApp
 
   class LoginDialog < Gtk::Dialog
 		attr_reader :login, :password
+
 		def initialize
-			super("Authentication", nil, Gtk::Dialog::MODAL,
-			["Login", Gtk::Dialog::RESPONSE_ACCEPT],
-			[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])
+			super("Authentication",
+				nil,
+				Gtk::Dialog::MODAL,
+				["Login", Gtk::Dialog::RESPONSE_ACCEPT],
+				[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])
 			self.icon = GloudApp::Icon.normal
 			self.has_separator = false
 
