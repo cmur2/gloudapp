@@ -43,40 +43,67 @@ class App
 	def initialize
 		@client = CloudApp::Client.new
 		
-		if ARGV.length == 2
-			# assume that's username and password in ARGV
-			@client.authenticate(ARGV[0], ARGV[1])
-		else
-			login_dlg = LoginDialog.new
-			case login_dlg.run
-			when Gtk::Dialog::RESPONSE_ACCEPT
-				@client.authenticate(login_dlg.login.text, login_dlg.password.text)
-				login_dlg.destroy
-			when Gtk::Dialog::RESPONSE_REJECT
-				login_dlg.destroy
-				exit 1
-			end
-		end
+		@credentials = load_credentials
+		@client.authenticate(@credentials[:username], @credentials[:password])
 		
-		# check whether auth was successful
-		begin
-			@acc = CloudApp::Account.find
-			$domain = @acc.domain.nil? ? 'cl.ly' : @acc.domain
-		rescue
-			show_error_dialog("Error", "Authentication failed: #{$!.to_s}")
-			exit 1
+		if not credentials_valid?
+      @credentials = request_credentials
+      @client.authenticate(@credentials[:username], @credentials[:password])
 		end
 
+    if not credentials_valid?
+      show_error_dialog("Error", "Authentication failed: #{$!.to_s}")
+    end
+    
 		# main loop
 		register_status_icon
 		Gtk.main
+	end
+	
+	def credentials_valid?
+    # check whether auth was successful
+    begin
+      @acc = CloudApp::Account.find
+      $domain = @acc.domain.nil? ? 'cl.ly' : @acc.domain
+      return true
+    rescue
+      return false
+    end
+	end
+	
+	def load_credentials
+    if ARGV.length == 2
+      # assume that's username and password in ARGV
+      return {:username => ARGV[0], :password => ARGV[1]}
+    end
+    
+    @config_file = File.join(ENV['HOME'], '.cloudapp-cli')
+    if File.exists?(@config_file)
+      creds = YAML.load_file(@config_file)
+      return creds unless creds[:username].nil? or creds[:password].nil?
+    end
+    
+    request_credentails
+	end
+	
+	def request_credentials
+    login_dlg = LoginDialog.new
+    case login_dlg.run
+    when Gtk::Dialog::RESPONSE_ACCEPT
+      creds = {:username => login_dlg.login.text, :password => login_dlg.password.text}
+      login_dlg.destroy
+      return creds
+    when Gtk::Dialog::RESPONSE_REJECT
+      login_dlg.destroy
+      return nil
+    end
 	end
 	
 	def register_status_icon
 		# status icon
 		@si = Gtk::StatusIcon.new
 		@si.pixbuf = Gdk::Pixbuf.new('gloudapp.png')
-		@si.tooltip = 'GloudApp'
+		@si.tooltip = "GloudApp (#{@credentials[:username]})"
 		@si.signal_connect('activate') do
 			take_screenshot
 		end
