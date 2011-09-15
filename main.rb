@@ -104,8 +104,14 @@ module GloudApp
 		def create_tray
 			@tray = Tray.new :default => Proc.new { take_screenshot }
 
+			@tray.add_action "Copy last drop url",
+				:show => Proc.new { |item| check_last_drop(item) },
+				:action => Proc.new { copy_last_drop_url },
+				:no_icon_change => true
+
 			# take and upload screenshot
-			@tray.add_action("Take screenshot") { take_screenshot }
+			@tray.add_action("Take screenshot",
+				:after_seperator => true) { take_screenshot }
 
 			# upload file from path in clipboard
 			@tray.add_action "Upload from clipboard",
@@ -145,10 +151,28 @@ module GloudApp
 			end
 		end
 
+		def check_last_drop(item)
+			if @last_drop.nil?
+				item.set_sensitive(false)
+				item.label = "Copy last drop url"
+			else
+				item.set_sensitive(true)
+				item.label = "Copy #{@last_drop.url}"
+			end
+		end
+		
+		def copy_last_drop_url
+			self.clipboard_text = @last_drop.url unless @last_drop.nil?
+		end
+
 		def with_clipboard_text
 			Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD).request_text do |clipboard, text|
 				yield text
 			end
+		end
+		
+		def clipboard_text=(text)
+			Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD).text = text
 		end
 
 		def upload_via_chooser
@@ -185,8 +209,8 @@ module GloudApp
 				drop = @client.upload(file)
 				puts "URL (in clipboard, too): #{drop.url}"
 				# copy URL to clipboard
-				cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
-				cb.text = drop.url
+				self.clipboard_text = drop.url
+				@last_drop = drop
 				drop.url
 			else
 				error "Error uploading file #{file}. Does not exists or is not a file."
