@@ -125,7 +125,7 @@ module GloudApp
   	end
   	
   	def check_clipboard(item)
-      Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD).request_text do |clipboard, text|
+      with_clipboard_text do |text|
         if !text.nil? and File.file?(text)
           item.set_sensitive(true)
           item.label = "Upload: #{text}"
@@ -137,14 +137,18 @@ module GloudApp
   	end
   	
   	def upload_from_clipboard
-      Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD).request_text do |clipboard, text|
-        if !text.nil? and File.file?(text)
+  	  with_clipboard_text do |text|
+        if !text.nil?
           puts "Uploading file from clipboard..."
           upload_file(text)
-        else
-          ErrorDialog.run!("Error", "Error uploading file #{file}.")
         end
       end
+  	end
+  	
+  	def with_clipboard_text
+  	  Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD).request_text do |clipboard, text|
+  	    yield text
+  	  end
   	end
   	
   	def upload_via_chooser
@@ -155,23 +159,23 @@ module GloudApp
       if file_dlg.run == Gtk::Dialog::RESPONSE_ACCEPT
         file = GLib.filename_to_utf8(file_dlg.filename)
         file_dlg.destroy
-        if File.file?(file)
-          upload_file(file)
-        else
-          ErrorDialog.run!("Error", "Error uploading file #{file}.")
-        end
+        upload_file(file)
       else
         file_dlg.destroy
       end
   	end
   	
   	def upload_file(file)
-  		puts "Uploading #{file}"
-  		drop = @client.upload(file)
-  		puts "URL (in clipboard, too): #{drop.url}"
-  		# copy URL to clipboard
-  		cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
-  		cb.text = drop.url
+  	  if File.file?(file)
+    		puts "Uploading #{file}"
+    		drop = @client.upload(file)
+    		puts "URL (in clipboard, too): #{drop.url}"
+    		# copy URL to clipboard
+    		cb = Gtk::Clipboard.get(Gdk::Selection::CLIPBOARD)
+    		cb.text = drop.url
+    	else
+        error "Error uploading file #{file}. Does not exists or is not a file."
+    	end
   	end
   	
   	def take_screenshot
@@ -183,14 +187,34 @@ module GloudApp
   		if File.file?(file)
   			upload_file(file)
   		else
-  			ErrorDialog.run!("Error", "Error taking screenshot - did you install imagemagick?")
+  		  error "Error taking screenshot - did you install imagemagick?"
   		end
   	end
+  	
+  	def error(message)
+  	  options = {:message => message} unless message.is_a?(Hash)
+  	  options = {:title => 'Error'}.merge(options)
+  	  
+      @tray.icon = Icon.error
+      @tray.message = options[:message]
+      ErrorDialog.run!(options[:title], options[:message])
+  	end
+  end
+  
+  class Icon
+    def self.normal_path; 'icons/gloudapp.png' end
+    def self.finish_path; 'icons/gloudapp_finish.png' end
+    def self.working_path; 'icons/gloudapp_working.png' end
+    def self.error_path; 'icons/gloudapp_error.png' end
+    def self.normal; Gdk::Pixbuf.new(normal_path) end
+    def self.finish; Gdk::Pixbuf.new(finish_path) end
+    def self.working; Gdk::Pixbuf.new(working_path) end
+    def self.error; Gdk::Pixbuf.new(error_path) end
   end
   
   class Tray
     def initialize(options = {}, &default)
-      @options = {:tooltip => 'GloudApp', :icon => 'gloudapp.png'}.merge(options)
+      @options = {:tooltip => 'GloudApp', :icon => GloudApp::Icon.normal_path}.merge(options)
       @options[:default] = default unless @options[:default].is_a?(Proc)
     end
     
@@ -207,21 +231,48 @@ module GloudApp
       @si.pixbuf = Gdk::Pixbuf.new(@options[:icon])
       @si.tooltip = @options[:tooltip]
       @si.signal_connect('activate') do
-        @options[:default].call if @options[:default].is_a?(Proc)
+        run_action @options[:default]
       end
       
       create_menu
       @si.signal_connect('popup-menu') do |tray, button, time|
-        @actions.each do |action|
-          if action[:show].is_a?(Proc)
-            action[:show].call(action[:item])
+        if not @working
+          @actions.each do |action|
+            if action[:show].is_a?(Proc)
+              action[:show].call(action[:item])
+            end
           end
+          self.icon = Icon.normal
+          self.message = nil
+          @menu.popup(nil, nil, button, time)
         end
-        @menu.popup(nil, nil, button, time)
       end
     end
     
+    def icon=(icon)
+      @si.pixbuf = icon.is_a?(Gdk::Pixbuf) ? icon : Gdk::Pixbuf.new(icon)
+    end
+    
+    def message=(message)
+      @si.tooltip = message.nil? ? @options[:tooltip] : message.to_s
+    end
+    
     private
+    def run_action(proc)
+      if proc.is_a?(Proc)
+        self.icon = Icon.working
+        
+        # timeout action to get at least on repaint event after
+        # changing icon to working image
+        Gtk.timeout_add 100 do
+          if proc.call
+            self.icon = Icon.finish
+          end
+          false
+        end
+      end
+    end
+    
     def create_menu
       @menu = Gtk::Menu.new
       @actions.each do |action|
@@ -230,7 +281,7 @@ module GloudApp
         item = Gtk::MenuItem.new action[:title].to_s
         action[:item] = item
         item.signal_connect('activate') do
-          action[:action].call if action[:action].is_a?(Proc)
+          run_action action[:action]
         end
         @menu.append item
       end
@@ -244,7 +295,7 @@ module GloudApp
         nil, Gtk::Dialog::MODAL, Gtk::MessageDialog::ERROR,
         Gtk::MessageDialog::BUTTONS_CLOSE, message)
       err_dlg.title = title
-      err_dlg.icon = Gdk::Pixbuf.new('gloudapp.png')
+      err_dlg.icon = GloudApp::Icon.normal
       err_dlg.run
       err_dlg.destroy
     end
@@ -253,7 +304,7 @@ module GloudApp
   class AboutDialog < Gtk::AboutDialog
     def initialize
       super
-      self.icon = Gdk::Pixbuf.new('gloudapp.png')
+      self.icon = GloudApp::Icon.normal
       self.name = "GloudApp"
       self.program_name = "GloudApp"
       self.version = "0.1"
@@ -262,7 +313,7 @@ module GloudApp
       self.artists = ["Jan Graichen"]
       self.authors = ["Christian Nicolai", "Jan Graichen"]
       self.website = "https://github.com/cmur2/gloudapp"
-      self.logo = Gdk::Pixbuf.new('gloudapp.png')
+      self.logo = GloudApp::Icon.normal
     end
     
     def self.run!
@@ -279,7 +330,7 @@ module GloudApp
   		super("Authentication", nil, Gtk::Dialog::MODAL,
   			["Login", Gtk::Dialog::RESPONSE_ACCEPT],
   			[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])
-  		self.icon = Gdk::Pixbuf.new('gloudapp.png')
+  		self.icon = GloudApp::Icon.normal
   		self.has_separator = false
   
   		@login = Gtk::Entry.new
