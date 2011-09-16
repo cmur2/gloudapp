@@ -337,7 +337,7 @@ module GloudApp
 			self.program_name = "GloudApp"
 			self.version = "0.1"
 			self.copyright = "Copyright 2011 Christian Nicolai"
-			self.license = "" # TODO: license
+			self.license = "Apache License, Version 2.0"
 			self.artists = ["Jan Graichen"]
 			self.authors = ["Christian Nicolai", "Jan Graichen"]
 			self.website = "https://github.com/cmur2/gloudapp"

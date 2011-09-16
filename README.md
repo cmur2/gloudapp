@@ -51,6 +51,11 @@ Thanks
 
 To [Jan Graichen](https://github.com/jgraichen) for all kinds of help especially his nice art work!
 
+License
+-------
+
+GloudApp is licensed under the Apache License, Version 2.0. See LICENSE for more information.
+
 Links
 -----
 
