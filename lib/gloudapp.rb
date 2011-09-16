@@ -1,16 +1,14 @@
-#!/usr/bin/env ruby
-# encoding: UTF-8
 
-require 'rubygems'
 require 'gtk2'
 require 'cloudapp_api'
 
-SCRN_TIME_FMT = '%d%m%y-%H%M%S'
-TMP_DIR = "/tmp"
-
-require 'gloudapp/cloudapp_patches'
+require 'gloudapp/version'
+require 'gloudapp/patches'
 
 module GloudApp
+	SCRN_TIME_FMT = '%d%m%y-%H%M%S'
+	TMP_DIR = "/tmp"
+
 	class App
 		def initialize
 			@client = CloudApp::Client.new
@@ -385,5 +383,3 @@ module GloudApp
 		end
 	end
 end
-
-GloudApp::App.new.run!
