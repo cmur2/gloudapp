@@ -335,7 +335,7 @@ module GloudApp
 			self.program_name = "GloudApp"
 			self.version = GloudApp::Info::VERSION
 			self.copyright = GloudApp::Info::COPYRIGHT
-			self.license = "" # TODO: license
+			self.license = GloudApp::Info::LICENSE
 			self.artists = GloudApp::Info::ARTISTS.map { |author| "#{author[0]} <#{author[1]}>" }
 			self.authors = GloudApp::Info::AUTHORS.map { |author| "#{author[0]} <#{author[1]}>" }
 			self.website = GloudApp::Info::HOMEPAGE
