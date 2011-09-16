@@ -15,11 +15,7 @@ Install
 Header files needed to build native gem extensions for gtk2 gem and dependencies
 (distribution specific package names; here: Ubuntu 11.04):
 
-- libgdk-pixbuf2.0-dev
-- libglib2.0-dev
-- libatk1.0-dev
-- libgtk2.0-dev
-- libpango1.0-dev
+	libgdk-pixbuf2.0-dev libglib2.0-dev libatk1.0-dev libgtk2.0-dev libpango1.0-dev
 
 Then install the gloudapp gem:
 
