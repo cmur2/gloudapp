@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Christian Nicolai", "Jan Graichen"]
   s.email       = ["chrnicolai@gmail.com", "jan.graichen@altimos.de"]
   s.homepage    = ""
-  s.summary     = %q{TODO: CloudApp client for GNOME/GTK}
-  s.description = %q{TODO: CloudApp client for GNOME/GTK}
+  s.summary     = %q{CloudApp client for GNOME/GTK}
+  #s.description = %q{CloudApp client for GNOME/GTK}
 
   s.rubyforge_project = "gloudapp"
 
@@ -23,4 +23,5 @@ Gem::Specification.new do |s|
   # s.add_development_dependency "rspec"
   s.add_runtime_dependency "cloudapp_api"
   s.add_runtime_dependency "gtk2"
+  s.add_runtime_dependency "json"
 end
