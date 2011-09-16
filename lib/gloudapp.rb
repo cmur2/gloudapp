@@ -214,10 +214,11 @@ module GloudApp
 	end
   
 	class Icon
-		def self.normal_path; 'icons/gloudapp.png' end
-		def self.finish_path; 'icons/gloudapp_finish.png' end
-		def self.working_path; 'icons/gloudapp_working.png' end
-		def self.error_path; 'icons/gloudapp_error.png' end
+		def self.icon(icon) File.join(File.dirname(__FILE__), 'gloudapp', 'icons', icon + '.png') end
+		def self.normal_path; self.icon 'gloudapp' end
+		def self.finish_path; self.icon 'gloudapp_finish' end
+		def self.working_path; self.icon 'gloudapp_working' end
+		def self.error_path; self.icon 'gloudapp_error' end
 		def self.normal; Gdk::Pixbuf.new(normal_path) end
 		def self.finish; Gdk::Pixbuf.new(finish_path) end
 		def self.working; Gdk::Pixbuf.new(working_path) end
