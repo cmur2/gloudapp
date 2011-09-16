@@ -25,8 +25,8 @@ Then install the gloudapp gem:
 
 	gem install gloudapp
 
-If you does not use [rvm](http://beginrescueend.com/) you should add an 'sudo',
-but rvm ist strongly recommend because some 
+If you do not use [rvm](http://beginrescueend.com/) you should add an 'sudo'
+but rvm ist strongly recommended because some 
 [linux distributions](https://bugs.launchpad.net/ubuntu/+source/gems/+bug/145267) 
 does not add rubygem binaries into there PATH)
 
@@ -38,7 +38,7 @@ You could launch gloudapp (or place it in auto-start) via:
 	gloudapp
 	
 If this does not work and you are not using rvm think about using it. If you 
-really does not want to use rvm you may have to add rubygem binaries to your 
+really do not want to use rvm you may have to add rubygem binaries to your 
 PATH by adding `/var/lib/gems/1.8/bin` (depending on your system) to your PATH.
 
 You will be prompted to provide your credentials (or not if you're already
