@@ -2,7 +2,7 @@
 require 'gtk2'
 require 'cloudapp_api'
 
-require 'gloudapp/version'
+require 'gloudapp/info'
 require 'gloudapp/patches'
 
 module GloudApp
@@ -333,12 +333,12 @@ module GloudApp
 			self.icon = GloudApp::Icon.normal
 			self.name = "GloudApp"
 			self.program_name = "GloudApp"
-			self.version = "0.1"
-			self.copyright = "Copyright 2011 Christian Nicolai"
+			self.version = GloudApp::Info::VERSION
+			self.copyright = GloudApp::Info::COPYRIGHT
 			self.license = "" # TODO: license
-			self.artists = ["Jan Graichen"]
-			self.authors = ["Christian Nicolai", "Jan Graichen"]
-			self.website = "https://github.com/cmur2/gloudapp"
+			self.artists = GloudApp::Info::ARTISTS.map { |author| "#{author[0]} <#{author[1]}>" }
+			self.authors = GloudApp::Info::AUTHORS.map { |author| "#{author[0]} <#{author[1]}>" }
+			self.website = GloudApp::Info::HOMEPAGE
 			self.logo = GloudApp::Icon.normal
 		end
 		

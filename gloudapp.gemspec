@@ -1,15 +1,15 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
 
-require "gloudapp/version"
+require "gloudapp/info"
 
 Gem::Specification.new do |s|
   s.name        = "gloudapp"
-  s.version     = GloudApp::VERSION
-  s.authors     = ["Christian Nicolai", "Jan Graichen"]
-  s.email       = ["chrnicolai@gmail.com", "jan.graichen@altimos.de"]
-  s.homepage    = ""
-  s.summary     = %q{CloudApp client for GNOME/GTK}
+  s.version     = GloudApp::Info::VERSION
+  s.authors     = GloudApp::Info::AUTHORS.map { |author| author[0] }
+  s.email       = GloudApp::Info::AUTHORS.map { |author| author[1] }
+  s.homepage    = GloudApp::Info::HOMEPAGE
+  s.summary     = GloudApp::Info::SUMMARY
   #s.description = %q{CloudApp client for GNOME/GTK}
 
   s.rubyforge_project = "gloudapp"
