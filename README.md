@@ -23,9 +23,12 @@ Header files needed to build native gem extensions for gtk2 gem and dependencies
 
 Then install the gloudapp gem:
 
-	sudo gem install gloudapp
+	gem install gloudapp
 
-(If you use [rvm](http://beginrescueend.com/) you should omit the 'sudo'.)
+If you does not use [rvm](http://beginrescueend.com/) you should add an 'sudo',
+but rvm ist strongly recommend because some 
+[linux distributions](https://bugs.launchpad.net/ubuntu/+source/gems/+bug/145267) 
+does not add rubygem binaries into there PATH)
 
 Usage
 -----
@@ -33,8 +36,12 @@ Usage
 You could launch gloudapp (or place it in auto-start) via:
 
 	gloudapp
+	
+If this does not work and you are not using rvm think about using it. If you 
+really does not want to use rvm you may have to add rubygem binaries to your 
+PATH by adding `/var/lib/gems/1.8/bin` (depending on your system) to your PATH.
 
-Then you will be prompted to provide your credentials (or not if you're already
+You will be prompted to provide your credentials (or not if you're already
 using [cloudapp-cli](https://github.com/cmur2/cloudapp-cli) on the same machine).
 A successful login gives you a new small but fine icon right in your notification bar
 which is sensitive for left clicking (take screenshot and upload) and right clicking
