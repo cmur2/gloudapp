@@ -24,7 +24,7 @@ module GloudApp
 			end
 
 			if not credentials_valid?
-				show_error_dialog("Error", "Authentication failed: #{$!.to_s}")
+				ErrorDialog.run!("Error", "Authentication failed!")
 			end
 
 			create_tray
@@ -80,9 +80,10 @@ module GloudApp
 				:action => Proc.new { copy_last_drop_url },
 				:no_icon_change => true
 
+			@tray.add_separator
+
 			# take and upload screenshot
-			@tray.add_action("Take screenshot",
-				:after_seperator => true) { take_screenshot }
+			@tray.add_action("Take screenshot") { take_screenshot }
 
 			# upload file from path in clipboard
 			@tray.add_action "Upload from clipboard",
@@ -95,10 +96,10 @@ module GloudApp
 			# show about dialog
 			@tray.add_action("About", :no_icon_change => true) { GloudApp::AboutDialog.run! }
 
+			@tray.add_separator
+
 			# quit app
-			@tray.add_action("Quit",
-				:after_seperator => true,
-				:no_icon_change => true) { Gtk.main_quit }
+			@tray.add_action("Quit", :no_icon_change => true) { Gtk.main_quit }
 		end
 
 		def check_clipboard(item)
@@ -114,6 +115,8 @@ module GloudApp
 		end
 
 		def upload_from_clipboard
+			# current cliboard context might not be the same as shown
+			# on popup menu creation...
 			with_clipboard_text do |text|
 				if !text.nil?
 					puts "Uploading file from clipboard..."
@@ -237,6 +240,11 @@ module GloudApp
 			@actions << options
 		end
 
+		def add_separator()
+			@actions ||= []
+			@actions << {:separator => true}
+		end
+
 		def run!
 			@si = Gtk::StatusIcon.new
 			@si.pixbuf = Gdk::Pixbuf.new(@options[:icon])
@@ -287,9 +295,12 @@ module GloudApp
 		def create_menu
 			@menu = Gtk::Menu.new
 			@actions.each do |action|
-				@menu.append Gtk::SeparatorMenuItem.new if action[:after_seperator]
+				if action[:separator]
+					@menu.append Gtk::SeparatorMenuItem.new
+					next
+				end
 
-				item = Gtk::MenuItem.new action[:title].to_s
+				item = Gtk::MenuItem.new(action[:title].to_s)
 				action[:item] = item
 				item.signal_connect('activate') do
 					run_action action[:action], !!action[:no_icon_change]
@@ -300,18 +311,21 @@ module GloudApp
 		end
 	end
 
-	class ErrorDialog
-		def self.run!(title, message)
-			err_dlg = Gtk::MessageDialog.new(
-				nil, 
+	class ErrorDialog < Gtk::MessageDialog
+		def initialize(title, message)
+			super(nil,
 				Gtk::Dialog::MODAL, 
 				Gtk::MessageDialog::ERROR,
 				Gtk::MessageDialog::BUTTONS_CLOSE, 
 				message)
-			err_dlg.title = title
-			err_dlg.icon = GloudApp::Icon.normal
-			err_dlg.run
-			err_dlg.destroy
+			self.icon = GloudApp::Icon.normal
+			self.title = title
+		end
+
+		def self.run!(title, message)
+			instance = self.new(title, message)
+			instance.run
+			instance.destroy
 		end
 	end
 	
@@ -339,10 +353,13 @@ module GloudApp
 
   class LoginDialog < Gtk::Dialog
 		attr_reader :login, :password
+
 		def initialize
-			super("Authentication", nil, Gtk::Dialog::MODAL,
-			["Login", Gtk::Dialog::RESPONSE_ACCEPT],
-			[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])
+			super("Authentication",
+				nil,
+				Gtk::Dialog::MODAL,
+				["Login", Gtk::Dialog::RESPONSE_ACCEPT],
+				[Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_REJECT])
 			self.icon = GloudApp::Icon.normal
 			self.has_separator = false
 
