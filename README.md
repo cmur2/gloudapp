@@ -9,6 +9,8 @@ It is the equivalent to the official OSX client allowing you
 to take and upload screenshots with only a single click and
 other files through a file chooser dialog.
 
+**[Works with regenwolken](https://github.com/posativ/regenwolken)**
+
 Install
 -------
 
