@@ -13,17 +13,7 @@ module GloudApp
 		def initialize
 			@client = CloudApp::Client.new
 
-			@credentials = load_credentials
-			@client.authenticate(@credentials[:username], @credentials[:password])
-
-			if not credentials_valid?
-				@credentials = request_credentials
-				@client.authenticate(@credentials[:username], @credentials[:password])
-			end
-
-			if not credentials_valid?
-				ErrorDialog.run!("Error", "Authentication failed!")
-			end
+			login!
 
 			create_tray
 		end
@@ -31,6 +21,37 @@ module GloudApp
 		def run!
 			@tray.run!
 			Gtk.main
+		end
+
+		def login!
+			if ARGV.length == 2
+				# assume that's username and password in ARGV
+				@credentials = {:username => ARGV[0], :password => ARGV[1]}
+				@client.authenticate(@credentials[:username], @credentials[:password])
+				return if credentials_valid?
+				ErrorDialog.run!("GloudApp - Error", "Authentication failed!")
+				exit 1
+			end
+
+			@credentials = load_credentials('.gloudapp')
+			if not @credentials.nil?
+				@client.authenticate(@credentials[:username], @credentials[:password])
+				return if credentials_valid?
+			end
+
+			@credentials = load_credentials('.cloudapp-cli')
+			if not @credentials.nil?
+				@client.authenticate(@credentials[:username], @credentials[:password])
+				return if credentials_valid?
+			end
+
+			@credentials = request_credentials
+			if not @credentials.nil?
+				@client.authenticate(@credentials[:username], @credentials[:password])
+				return if credentials_valid?
+			end
+			ErrorDialog.run!("GloudApp - Error", "Authentication failed!")
+			exit 1
 		end
 
 		def credentials_valid?
@@ -42,19 +63,12 @@ module GloudApp
 			return false
 		end
 
-		def load_credentials
-			if ARGV.length == 2
-				# assume that's username and password in ARGV
-				return {:username => ARGV[0], :password => ARGV[1]}
+		def load_credentials(name)
+			config_file = File.join(ENV['HOME'], name)
+			if File.exists?(config_file)
+				return YAML.load_file(config_file)
 			end
-
-			@config_file = File.join(ENV['HOME'], '.cloudapp-cli')
-			if File.exists?(@config_file)
-				creds = YAML.load_file(@config_file)
-				return creds unless creds[:username].nil? or creds[:password].nil?
-			end
-
-			request_credentails
+			nil
 		end
 
 		def request_credentials
@@ -204,7 +218,7 @@ module GloudApp
 
 		def error(message)
 			options = {:message => message} unless message.is_a?(Hash)
-			options = {:title => 'Error'}.merge(options)
+			options = {:title => 'GloudApp - Error'}.merge(options)
 
 			@tray.icon = Icon.error
 			@tray.message = options[:message]
