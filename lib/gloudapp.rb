@@ -33,10 +33,15 @@ module GloudApp
 				exit 1
 			end
 
+			default_remember = false
+
 			@credentials = load_credentials('.gloudapp')
 			if not @credentials.nil?
 				@client.authenticate(@credentials[:username], @credentials[:password])
 				return if credentials_valid?
+				# make the login dialog remember the new credentials by default
+				# since the old ones in .gloudapp are wrong
+				default_remember = true
 			else
 				@credentials = load_credentials('.cloudapp-cli')
 				if not @credentials.nil?
@@ -45,7 +50,7 @@ module GloudApp
 				end
 			end
 
-			@credentials = request_credentials
+			@credentials = request_credentials(default_remember)
 			if not @credentials.nil?
 				@client.authenticate(@credentials[:username], @credentials[:password])
 				return if credentials_valid?
@@ -71,8 +76,8 @@ module GloudApp
 			nil
 		end
 
-		def request_credentials
-			login_dlg = LoginDialog.new
+		def request_credentials(default_remember)
+			login_dlg = LoginDialog.new(default_remember)
 			case login_dlg.run
 			when Gtk::Dialog::RESPONSE_ACCEPT
 				creds = {:username => login_dlg.login.text, :password => login_dlg.password.text}
@@ -370,7 +375,7 @@ module GloudApp
   class LoginDialog < Gtk::Dialog
 		attr_reader :login, :password, :remember
 
-		def initialize
+		def initialize(default_remember = false)
 			super("Authentication",
 				nil,
 				Gtk::Dialog::MODAL,
@@ -382,6 +387,7 @@ module GloudApp
 			@login = Gtk::Entry.new
 			@password = Gtk::Entry.new.set_visibility(false)
 			@remember = Gtk::CheckButton.new('Remember login')
+			@remember.active = default_remember
 			image = Gtk::Image.new(Gtk::Stock::DIALOG_AUTHENTICATION, Gtk::IconSize::DIALOG)
 
 			table = Gtk::Table.new(2, 3).set_border_width(5)
