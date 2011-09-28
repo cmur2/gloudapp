@@ -111,7 +111,7 @@ module GloudApp
 				:action => Proc.new { upload_from_clipboard }
 
 			# upload file via file chooser
-			@tray.add_action("Upload file") { upload_via_chooser }
+			@tray.add_action("Upload...") { upload_via_chooser }
 
 			# show about dialog
 			@tray.add_action("About", :no_icon_change => true) { GloudApp::AboutDialog.run! }
@@ -139,7 +139,7 @@ module GloudApp
 			# on popup menu creation...
 			with_clipboard_text do |text|
 				if !text.nil?
-					puts "Uploading file from clipboard..."
+					#puts "Uploading file from clipboard..."
 					upload_file(text)
 				end
 			end
@@ -199,9 +199,9 @@ module GloudApp
 
 		def upload_file(file)
 			if File.file?(file)
-				puts "Uploading #{file}"
+				#puts "Uploading #{file}"
 				drop = @client.upload(file)
-				puts "URL (in clipboard, too): #{drop.url}"
+				#puts "URL (in clipboard, too): #{drop.url}"
 				# copy URL to clipboard
 				self.clipboard_text = drop.url
 				@last_drop = drop
@@ -213,7 +213,7 @@ module GloudApp
 
 		def take_screenshot
 			file = File.join(TMP_DIR, "Screenshot #{Time.now.strftime(SCRN_TIME_FMT)}.png")
-			puts "Taking screenshot..."
+			#puts "Taking screenshot..."
 			# TODO: find rubish way to take screen shots
 			# make screenshot via image magick:
 			system("import -window root \"#{file}\"")
