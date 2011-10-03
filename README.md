@@ -28,6 +28,20 @@ but rvm ist strongly recommended because some
 [linux distributions](https://bugs.launchpad.net/ubuntu/+source/gems/+bug/145267) 
 do not add rubygem binaries to PATH)
 
+### Ubuntu and AppIndicator (experimental)
+
+People using newer versions of Ubuntu don't see the StatusIcon of GloudApp anymore.
+To solve this you should install the libappindicator header files:
+
+	sudo apt-get install libappindicator-dev
+
+And then the [ruby-libappindicator bindings as a gem](https://github.com/leander256/ruby_libappindicator):
+
+	gem install ruby-libappindicator
+
+Note: be beware that this is an experimentl feature and that the bindings are stated
+as 'beta' by their author.
+
 Usage
 -----
 

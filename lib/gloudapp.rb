@@ -287,6 +287,17 @@ module GloudApp
 					@menu.popup(nil, nil, button, time)
 				end
 			end
+			
+			begin
+				require 'ruby-libappindicator'
+				puts "Initialize AppIndicator..."
+				# params: id, icon name, category
+				@ai = AppIndicator::AppIndicator.new("gloudapp", GloudApp::Icon.normal_path, AppIndicator::Category::APPLICATION_STATUS);
+				@ai.set_menu(@menu)
+				@ai.set_status(AppIndicator::Status::ACTIVE)
+			rescue LoadError
+				puts "No AppIndicator support available."
+			end
 		end
 
 		def icon=(icon)
