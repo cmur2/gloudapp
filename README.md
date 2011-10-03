@@ -39,7 +39,7 @@ And then the [ruby-libappindicator bindings as a gem](https://github.com/leander
 
 	gem install ruby-libappindicator
 
-Note: be beware that this is an experimentl feature and that the bindings are stated
+Note: be beware that this is an experimental feature and that the bindings are stated
 as 'beta' by their author.
 
 Usage

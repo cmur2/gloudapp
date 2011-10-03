@@ -185,14 +185,14 @@ module GloudApp
 				# timeout to close file chooser before blocking gtk thread
 				Gtk.timeout_add 50 do
 					if upload_file(file)
-						@tray.icon = Icon.finish
+						@tray.icon = Icon.finish_path
 					end
 					false
 				end
 				false
 			else
 				file_dlg.destroy
-				@tray.icon = Icon.normal
+				@tray.icon = Icon.normal_path
 				false
 			end
 		end
@@ -228,7 +228,7 @@ module GloudApp
 			options = {:message => message} unless message.is_a?(Hash)
 			options = {:title => 'GloudApp - Error'}.merge(options)
 
-			@tray.icon = Icon.error
+			@tray.icon = Icon.error_path
 			@tray.message = options[:message]
 			ErrorDialog.run!(options[:title], options[:message])
 			false
@@ -237,14 +237,14 @@ module GloudApp
   
 	class Icon
 		def self.icon(icon) File.join(File.dirname(__FILE__), 'gloudapp', 'icons', icon + '.png') end
-		def self.normal_path; self.icon 'gloudapp' end
-		def self.finish_path; self.icon 'gloudapp_finish' end
-		def self.working_path; self.icon 'gloudapp_working' end
-		def self.error_path; self.icon 'gloudapp_error' end
-		def self.normal; Gdk::Pixbuf.new(normal_path) end
-		def self.finish; Gdk::Pixbuf.new(finish_path) end
+		def self.normal_path;  self.icon('gloudapp') end
+		def self.finish_path;  self.icon('gloudapp_finish') end
+		def self.working_path; self.icon('gloudapp_working') end
+		def self.error_path;   self.icon('gloudapp_error') end
+		def self.normal;  Gdk::Pixbuf.new(normal_path) end
+		def self.finish;  Gdk::Pixbuf.new(finish_path) end
 		def self.working; Gdk::Pixbuf.new(working_path) end
-		def self.error; Gdk::Pixbuf.new(error_path) end
+		def self.error;   Gdk::Pixbuf.new(error_path) end
 	end
 	
 	class Tray
@@ -282,7 +282,7 @@ module GloudApp
 							action[:show].call(action[:item])
 						end
 					end
-					self.icon = Icon.normal
+					self.icon = Icon.normal_path
 					self.message = nil
 					@menu.popup(nil, nil, button, time)
 				end
@@ -301,7 +301,11 @@ module GloudApp
 		end
 
 		def icon=(icon)
-			@si.pixbuf = icon.is_a?(Gdk::Pixbuf) ? icon : Gdk::Pixbuf.new(icon)
+			@si.pixbuf = Gdk::Pixbuf.new(icon)
+			if not @ai.nil?
+				# this relies on direct local file paths which works though it shouldn't
+				@ai.set_icon(icon)
+			end
 		end
 
 		def message=(message)
@@ -311,13 +315,13 @@ module GloudApp
 		private
 		def run_action(proc, no_icon_change = false)
 			if proc.is_a?(Proc)
-				self.icon = Icon.working unless no_icon_change
+				self.icon = Icon.working_path unless no_icon_change
 
 				# timeout action to get at least on repaint event after
 				# changing icon to working image
 				Gtk.timeout_add 50 do
 					if proc.call
-						self.icon = Icon.finish unless no_icon_change
+						self.icon = Icon.finish_path unless no_icon_change
 					end
 					false
 				end
