@@ -1,6 +1,6 @@
 module GloudApp
 	module Info
-		VERSION = "1.3.0"
+		VERSION = "1.3.1"
 		AUTHORS = [
 			["Christian Nicolai", "chrnicolai@gmail.com"],
 			["Jan Graichen", "jan.graichen@altimos.de"]

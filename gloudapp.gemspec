@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 	s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
 	s.require_paths = ["lib"]
 
-	s.add_runtime_dependency "cloudapp_api"
+	s.add_runtime_dependency "cloudapp_api", '>= 0.3.2'
 	s.add_runtime_dependency "gtk2"
 	s.add_runtime_dependency "json"
 end
