@@ -35,7 +35,7 @@ To solve this you should install the libappindicator header files:
 
 	sudo apt-get install libappindicator-dev
 
-And then the [ruby-libappindicator bindings as a gem](https://github.com/leander256/ruby_libappindicator):
+And then the [ruby-libappindicator bindings as a gem](https://github.com/leander256/ruby-libappindicator):
 
 	gem install ruby-libappindicator
 
