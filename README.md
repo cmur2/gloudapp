@@ -1,6 +1,8 @@
 GloudApp
 ========
 
+[![works with regenwolken](http://mycrobase.de/wtf/works_with_regenwolken.png)](https://github.com/posativ/regenwolken)
+
 GloudApp is a [CloudApp](http://getcloudapp.com/) client for Linux and
 [GNOME2](http://www.gnome.org/) based on GTK using the
 [Ruby-GNOME2](http://ruby-gnome2.sourceforge.jp/) bindings.
@@ -8,8 +10,6 @@ GloudApp is a [CloudApp](http://getcloudapp.com/) client for Linux and
 It is the equivalent to the official OSX client allowing you
 to take and upload screenshots with only a single click and
 other files through a file chooser dialog.
-
-**[Works with regenwolken](https://github.com/posativ/regenwolken)**
 
 Install
 -------
